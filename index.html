@@ -84,6 +84,57 @@
       </section>
     </main>
 
+        <!-- CART / CHECKOUT VIEW -->
+    <main v-else>
+      <h2>Cart</h2>
+      <p v-if="cart.length===0" class="muted">Your cart is empty.</p>
+
+      <section class="grid cart">
+        <article class="card" v-for="(l, idx) in cart" :key="idx">
+          <h3 class="title">
+            <i class="fa-solid fa-book-open"></i> {{ l.topic }}
+          </h3>
+          <ul class="meta">
+            <li><strong>Location:</strong> {{ l.location }}</li>
+            <li><strong>Price:</strong> Rs {{ l.price }}</li>
+          </ul>
+          <button class="btn danger" @click="removeFromCart(idx)">
+            Remove
+          </button>
+        </article>
+      </section>
+
+      <hr/>
+
+      <section class="checkout">
+        <h3>Checkout</h3>
+        <div class="form">
+          <label>
+            Name
+            <input v-model="order.name" placeholder="Letters only" />
+            <small :class="validName ? 'ok' : 'err'">
+              {{ validName ? '✔ Looks good' : 'Letters only (A–Z, spaces)' }}
+            </small>
+          </label>
+
+          <label>
+            Phone
+            <input v-model="order.phone" placeholder="Numbers only" />
+            <small :class="validPhone ? 'ok' : 'err'">
+              {{ validPhone ? '✔ Looks good' : 'Digits only (0–9)' }}
+            </small>
+          </label>
+
+          <button class="btn primary"
+                  :disabled="!canCheckout"
+                  @click="submitOrder">
+            Checkout
+          </button>
+        </div>
+
+        <p v-if="message" class="message">{{ message }}</p>
+      </section>
+
 
     
     </main>
