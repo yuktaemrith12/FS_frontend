@@ -134,11 +134,42 @@
 
         <p v-if="message" class="message">{{ message }}</p>
       </section>
-
-
-    
     </main>
   </div>
+  
+    <!-- VUE APP SCRIPT -->
+  <script>
+
+    new Vue({
+      el: "#app",
+
+      // For a root Vue 2 instance, data can be an object
+      data: {
+        //  Render URL here
+        API_BASE: "https://YOUR-RENDER-APP.onrender.com",
+
+        lessons: [],
+        loading: true,
+
+        // UI state
+        showCart: false,
+        cart: [],
+
+        // sorting + search
+        sortBy: "topic",
+        sortDir: "asc",
+        searchTerm: "",
+
+        // checkout
+        order: { name: "", phone: "" },
+        message: ""
+      },
+
+      
+    });
+  </script>
+
+
 
  
 </body>
