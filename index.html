@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>After Class</title>
+  <title>CST3144 Lessons (Vue 2)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- Vue 2 -->
@@ -12,13 +12,12 @@
   <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-  <!-- CSS -->
+  <!-- Your stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <div id="app" class="container">
-    <!-- Header -->
+    <!-- Header / Toolbar -->
     <header class="toolbar">
       <div class="brand">
         <i class="fa-solid fa-graduation-cap"></i> CST3144 Lessons
@@ -84,7 +83,7 @@
       </section>
     </main>
 
-        <!-- CART / CHECKOUT VIEW -->
+    <!-- CART / CHECKOUT VIEW -->
     <main v-else>
       <h2>Cart</h2>
       <p v-if="cart.length===0" class="muted">Your cart is empty.</p>
@@ -136,16 +135,15 @@
       </section>
     </main>
   </div>
-  
-    <!-- VUE APP SCRIPT -->
+
   <script>
 
+    // Root Vue 2 instance
     new Vue({
       el: "#app",
 
-      // For a root Vue 2 instance, data can be an object
       data: {
-        //  Render URL here
+        //  Render URL 
         API_BASE: "https://YOUR-RENDER-APP.onrender.com",
 
         lessons: [],
@@ -165,7 +163,7 @@
         message: ""
       },
 
-      // 
+      // computed properties for validation, filtering, sorting
       computed: {
         validName: function () {
           return /^[A-Za-z ]+$/.test(this.order.name || "");
@@ -208,13 +206,86 @@
         }
       },
 
+      // Lesson Management & Order Handling (Methods Section)
+      methods: {
+        loadLessons: function () {
+          var self = this;
+          fetch(self.API_BASE + "/lessons")
+            .then(function (res) {
+              if (!res.ok) throw new Error("Failed to fetch lessons");
+              return res.json();
+            })
+            .then(function (json) {
+              self.lessons = json;
+            })
+            .catch(function () {
+              // Week 0 fallback seed data if backend not yet live
+              self.lessons = [
+                { _id:"1", topic:"math",     location:"Hendon",        price:100, space:5 },
+                { _id:"2", topic:"science",  location:"Colindale",     price:90,  space:5 },
+                { _id:"3", topic:"english",  location:"Brent Cross",   price:80,  space:5 },
+                { _id:"4", topic:"music",    location:"Golders Green", price:120, space:5 },
+                { _id:"5", topic:"art",      location:"Hendon",        price:75,  space:5 },
+                { _id:"6", topic:"coding",   location:"Wood Green",    price:110, space:5 },
+                { _id:"7", topic:"dance",    location:"Hendon",        price:95,  space:5 },
+                { _id:"8", topic:"drama",    location:"Colindale",     price:85,  space:5 },
+                { _id:"9", topic:"biology",  location:"Brent Cross",   price:105, space:5 },
+                { _id:"10",topic:"chemistry",location:"Golders Green", price:115, space:5 }
+              ];
+            })
+            .finally(function () {
+              self.loading = false;
+            });
+        },
 
-      
+        addToCart: function (lesson) {
+          if (lesson.space > 0) {
+            this.cart.push(lesson);
+            lesson.space -= 1;
+          }
+        },
+
+        removeFromCart: function (idx) {
+          var lesson = this.cart.splice(idx, 1)[0];
+          var original = this.lessons.find(function (l) { return l._id === lesson._id; });
+          if (original) original.space += 1;
+        },
+
+        submitOrder: function () {
+          var self = this;
+
+          var payload = {
+            name: self.order.name.trim(),
+            phone: self.order.phone.trim(),
+            lessonIDs: self.cart.map(function (l) { return l._id; }),
+            space: self.cart.length
+          };
+
+          // Attempt real POST if backend is available; otherwise show success.
+          fetch(self.API_BASE + "/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          })
+          .then(function (res) {
+            if (!res.ok) throw new Error("Order API failed");
+            self.message = "✅ Order submitted!";
+          })
+          .catch(function () {
+            self.message = "✅ Order submitted! (offline demo)";
+          })
+          .finally(function () {
+            self.cart = [];
+            self.order = { name: "", phone: "" };
+            self.showCart = false;
+          });
+        }
+      },
+
+      mounted: function () {
+        this.loadLessons();
+      }
     });
   </script>
-
-
-
- 
 </body>
 </html>
