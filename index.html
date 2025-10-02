@@ -165,6 +165,50 @@
         message: ""
       },
 
+      // 
+      computed: {
+        validName: function () {
+          return /^[A-Za-z ]+$/.test(this.order.name || "");
+        },
+        validPhone: function () {
+          return /^[0-9]+$/.test(this.order.phone || "");
+        },
+        canCheckout: function () {
+          return this.cart.length > 0 && this.validName && this.validPhone;
+        },
+
+        // base marks: client-side filter
+        filteredLessons: function () {
+          var q = (this.searchTerm || "").toLowerCase();
+          if (!q) return this.lessons;
+          return this.lessons.filter(function (l) {
+            return (
+              String(l.topic).toLowerCase().includes(q) ||
+              String(l.location).toLowerCase().includes(q) ||
+              String(l.price).toLowerCase().includes(q) ||
+              String(l.space).toLowerCase().includes(q)
+            );
+          });
+        },
+
+        // sort after filter
+        sortedLessons: function () {
+          var arr = this.filteredLessons.slice();
+          var key = this.sortBy;
+          var dir = this.sortDir === "asc" ? 1 : -1;
+
+          return arr.sort(function (a, b) {
+            var va = a[key], vb = b[key];
+            if (typeof va === "string") va = va.toLowerCase();
+            if (typeof vb === "string") vb = vb.toLowerCase();
+            if (va < vb) return -1 * dir;
+            if (va > vb) return  1 * dir;
+            return 0;
+          });
+        }
+      },
+
+
       
     });
   </script>
