@@ -59,6 +59,32 @@
       </div>
     </header>
 
+    <!-- LESSONS VIEW -->
+    <main v-if="!showCart">
+      <p v-if="loading" class="muted">Loading lessons…</p>
+      <p v-else-if="sortedLessons.length === 0" class="muted">No results.</p>
+
+      <section class="grid">
+        <article class="card" v-for="l in sortedLessons" :key="l._id">
+          <h3 class="title">
+            <i class="fa-solid fa-book"></i> {{ l.topic }}
+          </h3>
+          <ul class="meta">
+            <li><strong>Location:</strong> {{ l.location }}</li>
+            <li><strong>Price:</strong> Rs {{ l.price }}</li>
+            <li><strong>Spaces:</strong> {{ l.space }}</li>
+          </ul>
+          <button class="btn"
+                  :class="{ primary: l.space>0 }"
+                  :disabled="l.space <= 0"
+                  @click="addToCart(l)">
+            Add to Cart
+          </button>
+        </article>
+      </section>
+    </main>
+
+
     
     </main>
   </div>
