@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>After Class</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Vue 2 -->
+  <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js"></script>
+
+  <!-- Font Awesome (icons) -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div id="app" class="container">
+    <!-- Header -->
+    <header class="toolbar">
+      <div class="brand">
+        <i class="fa-solid fa-graduation-cap"></i> CST3144 Lessons
+      </div>
+
+      <div class="controls">
+        <label class="control">
+          <span>Sort by</span>
+          <select v-model="sortBy" aria-label="Sort attribute">
+            <option value="topic">Subject</option>
+            <option value="location">Location</option>
+            <option value="price">Price</option>
+            <option value="space">Spaces</option>
+          </select>
+        </label>
+
+        <label class="control">
+          <span>Order</span>
+          <select v-model="sortDir" aria-label="Sort order">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </label>
+
+        <!-- (Optional) base-marks search: client-side filter -->
+        <label class="control search">
+          <span class="sr-only">Search</span>
+          <input v-model.trim="searchTerm"
+                 placeholder="Search subject, location, price, spaces…" />
+        </label>
+
+        <button class="btn primary"
+                :disabled="cart.length===0"
+                @click="showCart = !showCart">
+          <i class="fa-solid fa-cart-shopping"></i>
+          Cart ({{ cart.length }})
+        </button>
+      </div>
+    </header>
+
+    
+    </main>
+  </div>
+
+ 
+</body>
+</html>
