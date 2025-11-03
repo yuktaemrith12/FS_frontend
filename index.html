@@ -23,10 +23,19 @@
         <li><a href="#" :class="{active:view==='home'}" @click.prevent="go('home')">Home</a></li>
         <li><a href="#" :class="{active:view==='lessons'}" @click.prevent="go('lessons')">Book Now</a></li>
         <li>
-          <button class="cart-pill" :disabled="cart.length===0" @click="go('cart')">
+          <!-- Cart pill (toggle) -->
+          <button
+            class="cart-pill"
+            :disabled="view !== 'cart' && cart.length === 0"
+            @click="view === 'cart' ? go('lessons') : go('cart')"
+            :aria-label="view === 'cart' ? 'Back to lessons' : 'Open cart'"
+            :title="view === 'cart' ? 'Back to lessons' : 'Open cart'"
+          >
             <i class="fa-solid fa-cart-shopping"></i>
-            Cart ({{ cart.length }})
+            <span class="count" v-if="cart.length">{{ cart.length }}</span>
+            <span class="label">{{ view === 'cart' ? 'Back' : 'Cart' }}</span>
           </button>
+
         </li>
       </ul>
     </nav>
@@ -155,159 +164,224 @@
 
     <!-- ===== CART / CHECKOUT VIEW ===== -->
     <main v-if="view==='cart'" class="container">
-      <h2>Cart</h2>
-      <p v-if="cart.length===0" class="muted">Your cart is empty.</p>
+      <h2 class="page-title">Your Lesson Cart</h2>
 
-      <section class="grid cart">
-        <article class="card" v-for="(l, idx) in cart" :key="idx">
-          <h3 class="title"><i class="fa-solid fa-book-open"></i> {{ l.topic }}</h3>
-          <ul class="meta">
-            <li><strong>Location:</strong> {{ l.location }}</li>
-            <li><strong>Price:</strong> Rs {{ l.price }}</li>
-          </ul>
-          <button class="btn danger" @click="removeFromCart(idx)">Remove</button>
+      <section v-if="cart.length" class="cart-grid">
+        <!-- LEFT: Table -->
+        <article class="card cart-table-wrap">
+          <table class="cart-table" aria-label="Selected lessons">
+            <thead>
+              <tr>
+                <th>Lesson</th>
+                <th>Location</th>
+                <th class="right">Price (Rs)</th>
+                <th class="center">Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(l, idx) in cart" :key="idx">
+                <td class="cap">{{ l.topic }}</td>
+                <td>{{ l.location }}</td>
+                <td class="right">{{ l.price }}</td>
+                <td class="center">
+                  <button class="icon-btn danger" @click="removeFromCart(idx)" aria-label="Remove lesson">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="grand">
+                <td colspan="2" class="right">Total</td>
+                <td class="right"><strong>Rs {{ cartTotal }}</strong></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+
         </article>
+
+        <!-- RIGHT: Modern Checkout -->
+        <aside class="card pay-panel">
+          <h3>Checkout</h3>
+
+          <div class="pay-method">
+            <label class="radio"><input type="radio" name="pm" checked/> <span>Pay on site</span></label>
+            <label class="radio"><input type="radio" name="pm" disabled/> <span class="muted">Card (demo)</span></label>
+          </div>
+
+          <div class="form compact">
+            <label>
+              Full Name
+              <input v-model="order.name" placeholder="Letters only" />
+              <small :class="validName ? 'ok' : 'err'">{{ validName ? '✔ Looks good' : 'Letters only (A–Z, spaces)' }}</small>
+            </label>
+            <label>
+              Phone
+              <input v-model="order.phone" placeholder="Numbers only" />
+              <small :class="validPhone ? 'ok' : 'err'">{{ validPhone ? '✔ Looks good' : 'Digits only (0–9)' }}</small>
+            </label>
+          </div>
+
+          <button class="btn primary checkout-btn"
+                  :disabled="!canCheckout"
+                  @click="openConfirm">
+            Check Out
+          </button>
+          <p v-if="message" class="message">{{ message }}</p>
+        </aside>
       </section>
 
-      <hr/>
+      <p v-else class="muted">Your cart is empty.</p>
 
-      <section class="checkout">
-        <h3>Checkout</h3>
-        <div class="form">
-          <label>
-            Name
-            <input v-model="order.name" placeholder="Letters only" />
-            <small :class="validName ? 'ok' : 'err'">{{ validName ? '✔ Looks good' : 'Letters only (A–Z, spaces)' }}</small>
-          </label>
-          <label>
-            Phone
-            <input v-model="order.phone" placeholder="Numbers only" />
-            <small :class="validPhone ? 'ok' : 'err'">{{ validPhone ? '✔ Looks good' : 'Digits only (0–9)' }}</small>
-          </label>
-          <button class="btn primary" :disabled="!canCheckout" @click="submitOrder">Checkout</button>
+      <!-- Confirmation Modal -->
+      <div class="modal-mask" v-if="showConfirm" @click.self="showConfirm=false">
+        <div class="modal">
+          <h3>Order confirmation</h3>
+          <p class="muted">You’re about to submit your booking for <strong>{{ cart.length }}</strong> lesson(s), total <strong>Rs {{ cartTotal }}</strong>.</p>
+          <div class="modal-actions">
+            <button class="btn" @click="showConfirm=false">Cancel</button>
+            <button class="btn primary" @click="finalizeCheckout">Confirm & Go Home</button>
+          </div>
         </div>
-        <p v-if="message" class="message">{{ message }}</p>
-      </section>
+      </div>
     </main>
+
   </div>
 
-  <script>
-    new Vue({
-      el: "#app",
-      data: {
-        // Set to "" during design to use seed quickly; set to your Render URL later
-        API_BASE: "",
-        view: "home",           // 'home' | 'lessons' | 'cart'
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          // Set to "" during design to use seed quickly; set to your Render URL later
+          API_BASE: "",
+          view: "home",           // 'home' | 'lessons' | 'cart'
 
-        lessons: [],
-        loading: true,
+          lessons: [],
+          loading: true,
 
-        // sorting + search (Lessons view)
-        sortBy: "topic",
-        sortDir: "asc",
-        searchTerm: "",
+          // sorting + search (Lessons view)
+          sortBy: "topic",
+          sortDir: "asc",
+          searchTerm: "",
 
-        // cart + checkout
-        cart: [],
-        order: { name: "", phone: "" },
-        message: ""
-      },
-
-      computed: {
-        validName()  { return /^[A-Za-z ]+$/.test(this.order.name || ""); },
-        validPhone() { return /^[0-9]+$/.test(this.order.phone || ""); },
-        canCheckout(){ return this.cart.length>0 && this.validName && this.validPhone; },
-
-        filteredLessons() {
-          const q = (this.searchTerm || "").toLowerCase();
-          if (!q) return this.lessons;
-          return this.lessons.filter(l =>
-            String(l.topic).toLowerCase().includes(q) ||
-            String(l.location).toLowerCase().includes(q) ||
-            String(l.price).toLowerCase().includes(q) ||
-            String(l.space).toLowerCase().includes(q)
-          );
+          // cart + checkout
+          cart: [],
+          order: { name: "", phone: "" },
+          message: "",
+          // modal
+          showConfirm: false
         },
-        sortedLessons() {
-          const arr = this.filteredLessons.slice();
-          const key = this.sortBy;
-          const dir = this.sortDir === "asc" ? 1 : -1;
-          return arr.sort((a,b) => {
-            let va=a[key], vb=b[key];
-            if (typeof va==="string") va=va.toLowerCase();
-            if (typeof vb==="string") vb=vb.toLowerCase();
-            if (va<vb) return -1*dir;
-            if (va>vb) return 1*dir;
-            return 0;
-          });
-        }
-      },
 
-      methods: {
-      go(view) { 
-        this.view = view; 
-        window.scrollTo(0, 0); 
-      },
+        computed: {
+          validName()  { return /^[A-Za-z ]+$/.test(this.order.name || ""); },
+          validPhone() { return /^[0-9]+$/.test(this.order.phone || ""); },
+          canCheckout(){ return this.cart.length>0 && this.validName && this.validPhone; },
 
-      cap(s) { 
-        return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1); 
-      },
+          // running total for cart table + checkout
+          cartTotal() {
+            return this.cart.reduce((sum, l) => sum + Number(l.price || 0), 0);
+          },
 
-
-        loadLessons(){
-        const seed = [
-          { _id:"1", topic:"math",      location:"Hendon",        price:100, space:5, rating:5, img:"assets/1.png" },
-          { _id:"2", topic:"biology",   location:"Colindale",     price:90,  space:5, rating:4, img:"assets/2.png" },
-          { _id:"3", topic:"english",   location:"Brent Cross",   price:80,  space:5, rating:5, img:"assets/3.png" },
-          { _id:"4", topic:"music",     location:"Golders Green", price:120, space:5, rating:4.5, img:"assets/4.png" },
-          { _id:"5", topic:"art",       location:"Hendon",        price:75,  space:5, rating:5, img:"assets/5.png" },
-          { _id:"6", topic:"coding",    location:"Wood Green",    price:110, space:5, rating:3, img:"assets/6.png" },
-          { _id:"7", topic:"dance",     location:"Hendon",        price:95,  space:2, rating:4, img:"assets/7.png" },
-          { _id:"8", topic:"history",     location:"Colindale",     price:85,  space:5, rating:4, img:"assets/8.png" },
-          { _id:"9", topic:"economics",   location:"Brent Cross",   price:105, space:1, rating:4, img:"assets/9.png" },
-          { _id:"10",topic:"chemistry", location:"Golders Green", price:115, space:5, rating:5, img:"assets/10.png" }
-        ];
-
-          if (!this.API_BASE) {
-            this.lessons = seed; this.loading = false; return;
+          filteredLessons() {
+            const q = (this.searchTerm || "").toLowerCase();
+            if (!q) return this.lessons;
+            return this.lessons.filter(l =>
+              String(l.topic).toLowerCase().includes(q) ||
+              String(l.location).toLowerCase().includes(q) ||
+              String(l.price).toLowerCase().includes(q) ||
+              String(l.space).toLowerCase().includes(q)
+            );
+          },
+          sortedLessons() {
+            const arr = this.filteredLessons.slice();
+            const key = this.sortBy;
+            const dir = this.sortDir === "asc" ? 1 : -1;
+            return arr.sort((a,b) => {
+              let va=a[key], vb=b[key];
+              if (typeof va==="string") va=va.toLowerCase();
+              if (typeof vb==="string") vb=vb.toLowerCase();
+              if (va<vb) return -1*dir;
+              if (va>vb) return 1*dir;
+              return 0;
+            });
           }
-          fetch(this.API_BASE + "/lessons")
-            .then(r => { if(!r.ok) throw new Error(); return r.json(); })
-            .then(json => this.lessons = json)
-            .catch(() => this.lessons = seed)
-            .finally(() => this.loading = false);
         },
 
-        addToCart(lesson){
-          if(lesson.space>0){ this.cart.push(lesson); lesson.space -= 1; }
-        },
-        removeFromCart(idx){
-          const lesson = this.cart.splice(idx,1)[0];
-          const original = this.lessons.find(l => l._id===lesson._id);
-          if (original) original.space += 1;
+        methods: {
+          go(view) { 
+            this.view = view; 
+            window.scrollTo(0, 0); 
+          },
+
+          cap(s) { 
+            return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1); 
+          },
+
+          loadLessons(){
+            const seed = [
+              { _id:"1", topic:"math",      location:"Hendon",        price:500, space:5, rating:5, img:"assets/1.png" },
+              { _id:"2", topic:"biology",   location:"Colindale",     price:900,  space:5, rating:4, img:"assets/2.png" },
+              { _id:"3", topic:"english",   location:"Brent Cross",   price:800,  space:5, rating:5, img:"assets/3.png" },
+              { _id:"4", topic:"music",     location:"Golders Green", price:600, space:5, rating:4.5, img:"assets/4.png" },
+              { _id:"5", topic:"art",       location:"Hendon",        price:750,  space:5, rating:5, img:"assets/5.png" },
+              { _id:"6", topic:"coding",    location:"Wood Green",    price:450, space:5, rating:3, img:"assets/6.png" },
+              { _id:"7", topic:"dance",     location:"Hendon",        price:960,  space:5, rating:4, img:"assets/7.png" },
+              { _id:"8", topic:"history",   location:"Colindale",     price:665,  space:5, rating:4, img:"assets/8.png" },
+              { _id:"9", topic:"economics", location:"Brent Cross",   price:500, space:5, rating:4, img:"assets/9.png" },
+              { _id:"10",topic:"chemistry", location:"Golders Green", price:750, space:5, rating:5, img:"assets/10.png" }
+            ];
+
+            if (!this.API_BASE) {
+              this.lessons = seed; this.loading = false; return;
+            }
+            fetch(this.API_BASE + "/lessons")
+              .then(r => { if(!r.ok) throw new Error(); return r.json(); })
+              .then(json => this.lessons = json)
+              .catch(() => this.lessons = seed)
+              .finally(() => this.loading = false);
+          },
+
+          addToCart(lesson){
+            if(lesson.space>0){ this.cart.push(lesson); lesson.space -= 1; }
+          },
+          removeFromCart(idx){
+            const lesson = this.cart.splice(idx,1)[0];
+            const original = this.lessons.find(l => l._id===lesson._id);
+            if (original) original.space += 1;
+          },
+
+          // open the confirmation modal if form is valid
+          openConfirm(){
+            if(this.canCheckout) this.showConfirm = true;
+          },
+
+          // confirm -> submit order -> modal closes -> back home (submitOrder already routes home)
+          finalizeCheckout(){
+            this.submitOrder();
+            this.showConfirm = false;
+          },
+
+          submitOrder(){
+            const payload = {
+              name: this.order.name.trim(),
+              phone: this.order.phone.trim(),
+              lessonIDs: this.cart.map(l=>l._id),
+              space: this.cart.length
+            };
+            fetch(this.API_BASE + "/orders", {
+              method:"POST", headers:{ "Content-Type":"application/json" },
+              body: JSON.stringify(payload)
+            })
+            .finally(()=>{
+              this.cart = []; this.order = {name:"", phone:""}; this.go('home');
+            });
+          }
         },
 
-        submitOrder(){
-          const payload = {
-            name: this.order.name.trim(),
-            phone: this.order.phone.trim(),
-            lessonIDs: this.cart.map(l=>l._id),
-            space: this.cart.length
-          };
-          fetch(this.API_BASE + "/orders", {
-            method:"POST", headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify(payload)
-          })
-          .then(res => { if(!res.ok) throw new Error(); this.message="✅ Order submitted!"; })
-          .catch(()=> this.message="✅ Order submitted! (offline demo)")
-          .finally(()=>{
-            this.cart = []; this.order = {name:"", phone:""}; this.go('home');
-          });
-        }
-      },
+        mounted(){ this.loadLessons(); }
+      });
+    </script>
 
-      mounted(){ this.loadLessons(); }
-    });
-  </script>
 </body>
 </html>
