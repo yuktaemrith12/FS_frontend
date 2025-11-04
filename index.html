@@ -8,6 +8,11 @@
   <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js"></script>
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- Google Font: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
   <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -19,25 +24,29 @@
       <div class="nav-left">
         <span class="brand"><i class="fa-solid fa-graduation-cap"></i> MDX After Class</span>
       </div>
-      <ul class="nav-right">
+
+      <ul class="nav-center">
         <li><a href="#" :class="{active:view==='home'}" @click.prevent="go('home')">Home</a></li>
-        <li><a href="#" :class="{active:view==='lessons'}" @click.prevent="go('lessons')">Book Now</a></li>
-        <li>
-          <!-- Cart pill (toggle) -->
-          <button
-            class="cart-pill"
-            :disabled="view !== 'cart' && cart.length === 0"
-            @click="view === 'cart' ? go('lessons') : go('cart')"
-            :aria-label="view === 'cart' ? 'Back to lessons' : 'Open cart'"
-            :title="view === 'cart' ? 'Back to lessons' : 'Open cart'"
-          >
+        <li><a href="#" :class="{active:view==='lessons'}" @click.prevent="go('lessons')">Lessons</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <button
+          class="cart-pill"
+          :disabled="view !== 'cart' && cart.length === 0"
+          @click="view === 'cart' ? go('lessons') : go('cart')"
+        >
+          <template v-if="view === 'cart'">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span class="label">Back</span>
+          </template>
+          <template v-else>
             <i class="fa-solid fa-cart-shopping"></i>
             <span class="count" v-if="cart.length">{{ cart.length }}</span>
-            <span class="label">{{ view === 'cart' ? 'Back' : 'Cart' }}</span>
-          </button>
-
-        </li>
-      </ul>
+            <span class="label">Cart</span>
+          </template>
+        </button>
+      </div>
     </nav>
 
     <!-- ===== HOME VIEW (hero + tutors) ===== -->
@@ -57,7 +66,7 @@
                 new skills, spark creativity, and help students grow to the next level.
             </p>
             <div class="hero-actions">
-                <a href="#tutors" class="btn hollow">Our Tutors</a>
+                <a href="#tutors" class="btn hollow" @click.prevent="scrollToTutors">Our Tutors</a>
                 <button class="btn primary" @click="go('lessons')">Book Now</button>
             </div>
             </div>
@@ -119,7 +128,7 @@
           <option value="desc">Descending</option>
         </select>
 
-        <input class="search-input" v-model.trim="searchTerm" placeholder="Search subject, location, price, spaces…" />
+        <input class="search-input" v-model.trim="searchTerm" placeholder="Search Here ..." />
       </header>
 
       <p v-if="loading" class="muted">Loading lessons…</p>
@@ -130,9 +139,6 @@
         <article class="product-card" v-for="l in sortedLessons" :key="l._id">
           <div class="pc-media">
             <img :src="l.img || 'assets/placeholder.jpg'" :alt="cap(l.topic)" loading="lazy" />
-            <button class="pc-fav" type="button" aria-label="Save">
-              <i class="fa-regular fa-heart"></i>
-            </button>
           </div>
 
           <div class="pc-body">
@@ -172,6 +178,7 @@
           <table class="cart-table" aria-label="Selected lessons">
             <thead>
               <tr>
+                <th></th>
                 <th>Lesson</th>
                 <th>Location</th>
                 <th class="right">Price (Rs)</th>
@@ -180,6 +187,11 @@
             </thead>
             <tbody>
               <tr v-for="(l, idx) in cart" :key="idx">
+                <td>
+                  <img :src="l.img || 'assets/placeholder.jpg'" 
+                      :alt="cap(l.topic)" 
+                      class="cart-thumb" />
+                </td>
                 <td class="cap">{{ l.topic }}</td>
                 <td>{{ l.location }}</td>
                 <td class="right">{{ l.price }}</td>
@@ -192,12 +204,13 @@
             </tbody>
             <tfoot>
               <tr class="grand">
-                <td colspan="2" class="right">Total</td>
+                <td colspan="3" class="right">Total</td>
                 <td class="right"><strong>Rs {{ cartTotal }}</strong></td>
                 <td></td>
               </tr>
             </tfoot>
           </table>
+
 
         </article>
 
@@ -205,9 +218,15 @@
         <aside class="card pay-panel">
           <h3>Checkout</h3>
 
+          <div class="order-summary">
+            <div><span>Items: </span><strong>{{ cart.length }}</strong></div>
+            <div><span>Total: </span><strong>Rs {{ cartTotal }}</strong></div>
+          </div>
+
+
           <div class="pay-method">
-            <label class="radio"><input type="radio" name="pm" checked/> <span>Pay on site</span></label>
-            <label class="radio"><input type="radio" name="pm" disabled/> <span class="muted">Card (demo)</span></label>
+            <label class="radio"><input type="radio" name="pm"/> <span>Pay on site</span></label>
+            <label class="radio"><input type="radio" name="pm"/> <span>Card</span></label>
           </div>
 
           <div class="form compact">

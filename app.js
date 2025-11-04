@@ -110,6 +110,14 @@
             this.showConfirm = false;
           },
 
+          scrollToTutors(){
+            const el = document.getElementById('tutors');
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          },
+
+
           submitOrder(){
             const payload = {
               name: this.order.name.trim(),
