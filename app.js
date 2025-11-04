@@ -2,7 +2,7 @@
         el: "#app",
         data: {
           // Set to "" during design to use seed quickly; set to your Render URL later
-          API_BASE: "",
+          API_BASE: "http://localhost:10000",
           view: "home",           // 'home' | 'lessons' | 'cart'
 
           lessons: [],
