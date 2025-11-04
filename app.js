@@ -118,21 +118,45 @@
           },
 
 
-          submitOrder(){
+          async submitOrder() {
+            if (!this.order.name.match(/^[A-Za-z\s]+$/) || !this.order.phone.match(/^\d+$/)) return;
+
             const payload = {
               name: this.order.name.trim(),
               phone: this.order.phone.trim(),
-              lessonIDs: this.cart.map(l=>l._id),
+              lessonIDs: this.cart.map(l => String(l._id)),
               space: this.cart.length
             };
-            fetch(this.API_BASE + "/orders", {
-              method:"POST", headers:{ "Content-Type":"application/json" },
-              body: JSON.stringify(payload)
-            })
-            .finally(()=>{
-              this.cart = []; this.order = {name:"", phone:""}; this.go('home');
-            });
+
+            try {
+              // 1) Save the order
+              const r = await fetch(this.API_BASE + "/orders", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+              });
+              if (!r.ok) throw new Error("Order failed");
+
+              // 2) Persist spaces for each lesson currently in cart
+              await Promise.all(this.cart.map(l =>
+                fetch(this.API_BASE + "/lessons/" + l._id, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ space: l.space })  // use the decremented value from UI
+                })
+              ));
+
+              // 3) UX: clear + message + navigate
+              this.cart = [];
+              this.order = { name: "", phone: "" };
+              this.message = "Order placed successfully 🎉";
+              this.view = "home";
+            } catch (e) {
+              this.message = "Sorry, something went wrong. Please try again.";
+              console.error(e);
+            }
           }
+
         },
 
         mounted(){ this.loadLessons(); }
