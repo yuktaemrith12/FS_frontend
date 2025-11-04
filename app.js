@@ -2,7 +2,7 @@
         el: "#app",
         data: {
           // Set to "" during design to use seed quickly; set to your Render URL later
-          API_BASE: "http://localhost:10000",
+          API_BASE: "https://fs-backend-e7uu.onrender.com",
           view: "home",           // 'home' | 'lessons' | 'cart'
 
           lessons: [],
