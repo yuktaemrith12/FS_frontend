@@ -1,10 +1,17 @@
-/* ===== Base tokens ===== */
+
+/* =========================================================
+   1) DESIGN TOKENS & BASE RESETS
+   ---------------------------------------------------------
+   - Centralized theme variables for easy theming.
+   - Normalize box-sizing and remove default margins.
+   ========================================================= */
+ /* ===== Base tokens ===== */
 :root{
   --bg:#ffffff;
   --section:#f7f8fb;
   --ink:#111827;
   --muted:#6b7280;
-  --primary:#f07c3e;      /* orange like your mock */
+  --primary:#f07c3e;      
   --primary-ink:#fff;
   --danger:#c2410c;
   --border:#e5e7eb;
@@ -29,8 +36,14 @@ p, li, label, small, table, th, td {
 }
 
 
-/* ===== Top Nav ===== */
+/* =========================================================
+   2) TOP NAVIGATION
+   ---------------------------------------------------------
+   - Global header with brand, center navigation, and cart pill.
+   - Active state underlines current pseudo-route.
+   ========================================================= */
 
+/* ===== Top Nav ===== */
 .site-nav {
   display: flex;
   justify-content: space-between;
@@ -80,6 +93,14 @@ p, li, label, small, table, th, td {
 }
 .cart-pill:disabled{opacity:.55; cursor:not-allowed}
 
+
+/* =========================================================
+   3) HERO (HOME)
+   ---------------------------------------------------------
+   - Grid split for illustration and copy/CTA.
+   - Buttons styled as primary/hollow.
+   - Optional decorative background shapes.
+   ========================================================= */
 /* ===== Hero ===== */
 .hero{
   display:grid; grid-template-columns: 1.1fr 1fr; gap:24px;
@@ -102,6 +123,13 @@ p, li, label, small, table, th, td {
 .bg.one{top:60px; left:8%}
 .bg.two{top:140px; right:12%}
 
+
+/* =========================================================
+   4) TUTORS SECTION
+   ---------------------------------------------------------
+   - Responsive grid of tutor cards with avatars.
+   - Soft cards with border + shadow.
+   ========================================================= */
 /* ===== Tutors section ===== */
 .tutors{padding:30px 22px 50px; background:var(--section)}
 .tutors h2{text-align:center; margin:0 0 18px}
@@ -118,6 +146,13 @@ p, li, label, small, table, th, td {
 .avatar img{width:100%; height:100%; object-fit:cover; border-radius:999px}
 .tutors-cta{display:flex; justify-content:center; margin-top:18px}
 
+
+/* =========================================================
+   5) SHARED LAYOUT (LESSONS & CART)
+   ---------------------------------------------------------
+   - Page container, toolbar, common card styles, helpers.
+   - Form + validation micro-styles.
+   ========================================================= */
 /* ===== Lessons / Cart shared ===== */
 .container{max-width:1100px; margin:24px auto; padding:0 16px}
 .toolbar{display:flex; gap:10px; align-items:center; margin:0 0 14px}
@@ -144,6 +179,13 @@ small.ok{color:#065f46}
 small.err{color:#b94e1c}
 .message{margin-top:8px; background:#ecfdf5; border:1px solid #bbf7d0; color:#065f46; padding:10px 12px; border-radius:10px}
 
+
+/* =========================================================
+   6) RESPONSIVE (GLOBAL ADJUSTMENTS)
+   ---------------------------------------------------------
+   - Compact hero on smaller screens.
+   - Additional responsive rules appear later for cart/checkout.
+   ========================================================= */
 /* ===== Responsive ===== */
 @media (max-width: 900px){
   .hero{grid-template-columns: 1fr; text-align:left}
@@ -151,6 +193,11 @@ small.err{color:#b94e1c}
 }
 
 
+/* =========================================================
+   7) PRODUCT CARDS (LESSONS GRID)
+   ---------------------------------------------------------
+   - Product-style cards with media, meta, rating, and CTA.
+   ========================================================= */
 /* === Product-style Cards (like the reference) === */
 .product-grid{
   display:grid;
@@ -193,7 +240,13 @@ small.err{color:#b94e1c}
 .pc-cta.disabled{ background:#e5e7eb; color:#6b7280; }
 
 
-/* ============ Cart – Table + Pay Panel ============ */
+/* =========================================================
+   8) CART & CHECKOUT (TABLE + PAY PANEL)
+   ---------------------------------------------------------
+   - Two-column layout: cart table + payment/summary panel.
+   - Utility classes for alignment and capitalization.
+   ========================================================= */
+
 .page-title{ margin:0 0 12px; }
 .cart-grid{
   display:grid;
@@ -248,6 +301,12 @@ small.err{color:#b94e1c}
 .form.compact{ display:grid; gap:10px; }
 .checkout-btn{ width:100%; margin-top:60px; }
 
+
+/* =========================================================
+   9) MODAL (CONFIRMATION)
+   ---------------------------------------------------------
+   - Full-screen mask with centered modal card.
+   ========================================================= */
 /* Modal */
 .modal-mask{
   position:fixed; inset:0; background:rgba(0,0,0,.45);
@@ -260,12 +319,25 @@ small.err{color:#b94e1c}
 }
 .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:14px; }
 
+
+/* =========================================================
+   10) RESPONSIVE (CART & CHECKOUT)
+   ---------------------------------------------------------
+   - Stack the cart and checkout panels on small screens.
+   ========================================================= */
 /* Small screens */
 @media (max-width: 900px){
   .cart-grid{ grid-template-columns: 1fr; }
 }
 
 
+ /* =========================================================
+   11) CHECKOUT AESTHETICS UPGRADE
+   ---------------------------------------------------------
+   - Visual refinements for thumbnails, pay panel, form fields,
+     button interactions, and helper texts.
+   - These enhance UX without changing functionality.
+   ========================================================= */
 .cart-thumb {
   width: 60px;
   height: 60px;
@@ -274,7 +346,6 @@ small.err{color:#b94e1c}
   box-shadow: 0 2px 6px rgba(0,0,0,.1);
 }
 
-/* --- Checkout aesthetics upgrade --- */
 .pay-panel{
   border:1px solid var(--border);
   border-radius:18px;
@@ -318,7 +389,7 @@ small.err{color:#b94e1c}
 .pay-panel input, 
 .pay-panel select, 
 .pay-panel textarea{
-  font-family:'Montserrat', sans-serif;      /* keep font consistent */
+  font-family:'Montserrat', sans-serif;      
   font-size:.95rem;
   border:1px solid var(--border);
   border-radius:12px;
@@ -364,4 +435,3 @@ small.err{ color:#b45309; }    /* warm amber for warnings */
 @media (max-width: 900px){
   .order-summary{ margin-top:0; }
 }
-
