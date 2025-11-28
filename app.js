@@ -1,93 +1,86 @@
-
-
 new Vue({
-  /* ---------------------------------------------------------
-     Root Element
-     ---------------------------------------------------------
-     - Mounts Vue instance to the <div id="app"> in index.html
-     - Everything inside becomes reactive.
-  --------------------------------------------------------- */
+
   el: "#app",
 
   /* ---------------------------------------------------------
      Application Data (Reactive State)
-     ---------------------------------------------------------
-     - Stores all variables used across the interface.
-     - Automatically updates the DOM when values change.
   --------------------------------------------------------- */
   data: {
-    // Base URL for the backend API (set empty "" for local design mode)
+    // Render backend API 
     API_BASE: "https://fs-backend-e7uu.onrender.com",
 
-    // Controls which view (section) is displayed
-    // Possible values: 'home' | 'lessons' | 'cart'
+    // Display Home View by default
     view: "home",
 
-    // Fetched lesson data from backend (or fallback seed)
+    // Fetched lesson data from backend  
     lessons: [],
     loading: true,
 
-    // Sorting and searching state for Lessons view
-    sortBy: "topic",   // default sort by topic
-    sortDir: "asc",    // ascending order
-    searchTerm: "",    // bound to search input
+    // Default sorting and searching state 
+    sortBy: "topic",   
+    sortDir: "asc",    
+    searchTerm: "",    
 
-    // Cart + checkout form state
+    // Default cart + checkout form state
     cart: [],
     order: { name: "", phone: "" },
     message: "",
 
-    // Modal visibility toggle for confirmation popup
     showConfirm: false
   },
 
+  // Smooth scroll for "Our Tutors" button
+  scrollToTutors(){
+    const el = document.getElementById('tutors');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      },
+
   /* ---------------------------------------------------------
-     Computed Properties (Derived Data)
-     ---------------------------------------------------------
-     - Automatically recomputed when dependencies change.
-     - Used to simplify logic in the template (index.html).
+     Computed Properties (Recalculates data on state change)
   --------------------------------------------------------- */
   computed: {
-    // === Form validation ===
-    validName()  { return /^[A-Za-z ]+$/.test(this.order.name || ""); },
-    validPhone() { return /^[0-9]+$/.test(this.order.phone || ""); },
 
-    // Button enabled only when form + cart are valid
+    //  Form validation 
+    validName()  { return /^[A-Za-z ]+$/.test(this.order.name || ""); },  // true if name contains only letters + spaces
+    validPhone() { return /^[0-9]+$/.test(this.order.phone || ""); },     // true if phone contains only digits
+
+    // Checkout Validation
     canCheckout() {
-      return this.cart.length > 0 && this.validName && this.validPhone;
+      return this.cart.length > 0 && this.validName && this.validPhone;   // at least one lesson + valid form
     },
 
-    // === Cart Calculations ===
-    // Total price for checkout & table footer
+    // Total price 
     cartTotal() {
-      return this.cart.reduce((sum, l) => sum + Number(l.price || 0), 0);
+      return this.cart.reduce((sum, l) => sum + Number(l.price || 0), 0); // sum of lesson prices
     },
 
-    // === Filtering & Sorting for Lessons ===
-    // Filter lessons according to search term
+
+    // Filter lessons 
     filteredLessons() {
-      const q = (this.searchTerm || "").toLowerCase();
-      if (!q) return this.lessons;
-      return this.lessons.filter(l =>
-        String(l.topic).toLowerCase().includes(q) ||
+      const q = (this.searchTerm || "").toLowerCase();    // normalize search query
+      if (!q) return this.lessons;                        // return all if no query
+      return this.lessons.filter(l =>                     // return only lessons that match the search term
+        String(l.topic).toLowerCase().includes(q) ||     
         String(l.location).toLowerCase().includes(q) ||
         String(l.price).toLowerCase().includes(q) ||
         String(l.space).toLowerCase().includes(q)
       );
     },
 
-    // Sort lessons after filtering, based on sortBy + sortDir
+    // Sort lessons 
     sortedLessons() {
-      const arr = this.filteredLessons.slice();
-      const key = this.sortBy;
-      const dir = this.sortDir === "asc" ? 1 : -1;
+      const arr = this.filteredLessons.slice();     // create a copy of filtered array
+      const key = this.sortBy;                      // key = sort by fields
+      const dir = this.sortDir === "asc" ? 1 : -1;  // direction multiplier -> flips the result of the comparison
 
       return arr.sort((a,b) => {
-        let va=a[key], vb=b[key];
-        if (typeof va==="string") va=va.toLowerCase();
+        let va=a[key], vb=b[key];                             // compare "sort by" values
+        if (typeof va==="string") va=va.toLowerCase();  
         if (typeof vb==="string") vb=vb.toLowerCase();
-        if (va<vb) return -1*dir;
-        if (va>vb) return 1*dir;
+        if (va<vb) return -1*dir;                             // +1 A before B (descending)
+        if (va>vb) return 1*dir;                              // -1 B before A (ascending)        
         return 0;
       });
     }
@@ -95,31 +88,25 @@ new Vue({
 
   /* ---------------------------------------------------------
      METHODS – User Interaction & API Calls
-     ---------------------------------------------------------
-     - Define all the app’s actions (navigation, cart, submit).
-     - Connected to HTML via @click, v-model, v-for, etc.
   --------------------------------------------------------- */
   methods: {
-    /* ----- Navigation between sections ----- */
+    // Navigation between sections
     go(view) { 
       this.view = view; 
       window.scrollTo(0, 0);   // scroll to top when switching pages
     },
 
-    /* Capitalize first letter (used for lesson titles) */
+    //Capitalize first letter (titles) 
     cap(s) { 
       return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1); 
     },
 
     /* ---------------------------------------------------------
        Load Lessons (GET /lessons)
-       ---------------------------------------------------------
-       - Fetches lessons from backend on Render.
-       - If API fails or not set, use local seed data.
-       - Updates the lessons array used by v-for.
-    --------------------------------------------------------- */
+       ---------------------------------------------------------*/
     loadLessons(){
-      // Fallback seed data used during development or API downtime
+
+      // Fallback seed data 
       const seed = [
         { _id:"1", topic:"math",      location:"Hendon",        price:500, space:5, rating:5, img:"assets/subjects/1.png" },
         { _id:"2", topic:"biology",   location:"Colindale",     price:900, space:5, rating:4, img:"assets/subjects/2.png" },
@@ -132,8 +119,6 @@ new Vue({
         { _id:"9", topic:"economics", location:"Brent Cross",   price:500, space:5, rating:4, img:"assets/subjects/9.png" },
         { _id:"10",topic:"chemistry", location:"Golders Green", price:750, space:5, rating:5, img:"assets/subjects/10.png" }
       ];
-
-      // If no backend URL is set, use seed lessons immediately
       if (!this.API_BASE) {
         this.lessons = seed; 
         this.loading = false; 
@@ -141,62 +126,47 @@ new Vue({
       }
 
       // Fetch lessons from backend (MongoDB via Express)
-      fetch(this.API_BASE + "/lessons")
-        .then(r => { if(!r.ok) throw new Error(); return r.json(); })
-        .then(json => this.lessons = json)
-        .catch(() => this.lessons = seed)    // fallback on error
+      fetch(this.API_BASE + "/lessons")                               // GET request to /lessons from Express server
+        .then(r => { if(!r.ok) throw new Error(); return r.json(); }) // check response
+        .then(json => this.lessons = json)                            // parses the JSON, stores it in this.lessons
+        .catch(() => this.lessons = seed)                             // fallback on error to seed
         .finally(() => this.loading = false);
     },
 
     /* ---------------------------------------------------------
        Cart Management
-       ---------------------------------------------------------
-       - Add/Remove lessons dynamically.
-       - Decrement/increment available spaces in real time.
-    --------------------------------------------------------- */
+       --------------------------------------------------------- */
     addToCart(lesson){
-      if(lesson.space > 0){ 
-        this.cart.push(lesson); 
+      if(lesson.space > 0){     // only if space available 
+        this.cart.push(lesson); //  add lesson to cart
         lesson.space -= 1;      // visually reduce available slots
       }
     },
 
     removeFromCart(idx){
-      const lesson = this.cart.splice(idx,1)[0];
-      const original = this.lessons.find(l => l._id===lesson._id);
-      if (original) original.space += 1;    // restore space count
+      const lesson = this.cart.splice(idx,1)[0];                    // remove element from array
+      const original = this.lessons.find(l => l._id===lesson._id);  // find original lesson (id)
+      if (original) original.space += 1;                            // increase space count
     },
 
     /* ---------------------------------------------------------
-       Modal + Checkout Handling
-       ---------------------------------------------------------
-       - Opens confirmation popup only if form valid.
-       - Finalizes checkout, submits order, resets UI.
+      Checkout Handling
     --------------------------------------------------------- */
+
+    // Open confirmation modal
     openConfirm(){
       if(this.canCheckout) this.showConfirm = true;
     },
 
+    // Finalize checkout from modal
     finalizeCheckout(){
       this.submitOrder();       // process checkout
       this.showConfirm = false; // close modal
     },
 
-    /* Smooth scroll for "Our Tutors" button */
-    scrollToTutors(){
-      const el = document.getElementById('tutors');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    },
 
     /* ---------------------------------------------------------
        Submit Order (POST /orders + PUT /lessons/:id)
-       ---------------------------------------------------------
-       - Sends new order to backend.
-       - Updates spaces for each booked lesson.
-       - Displays success or error message.
-       - Resets form + navigates back to Home.
     --------------------------------------------------------- */
     async submitOrder() {
       // Validate form again (client-side safety)
@@ -212,19 +182,19 @@ new Vue({
 
       try {
         // 1) Save order in the backend database
-        const r = await fetch(this.API_BASE + "/orders", {
+        const r = await fetch(this.API_BASE + "/orders", {  // HTTP sends POST request to /orders
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          headers: { "Content-Type": "application/json" },  
+          body: JSON.stringify(payload)                    // turns payload into JSON
         });
         if (!r.ok) throw new Error("Order failed");
 
-        // 2) Update lesson availability (PUT request per lesson)
-        await Promise.all(this.cart.map(l =>
-          fetch(this.API_BASE + "/lessons/" + l._id, {
+        // 2) Update lesson availability 
+        await Promise.all(this.cart.map(l =>                  // for each lesson in cart
+          fetch(this.API_BASE + "/lessons/" + l._id, {        // send PUT request to /lessons/:id
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ space: l.space })  // use updated value
+            headers: { "Content-Type": "application/json" },  // specify JSON content
+            body: JSON.stringify({ space: l.space })          // send updated space count as JSON   
           })
         ));
 
@@ -234,19 +204,14 @@ new Vue({
         this.message = "Order placed successfully 🎉";
         this.view = "home";
       } catch (e) {
-        // Error handling (network/API issues)
+        // Error handling 
         this.message = "Sorry, something went wrong. Please try again.";
         console.error(e);
       }
     }
   },
 
-  /* ---------------------------------------------------------
-     Lifecycle Hook – mounted()
-     ---------------------------------------------------------
-     - Runs automatically when Vue instance loads.
-     - Triggers loadLessons() to populate data immediately.
-  --------------------------------------------------------- */
+
   mounted(){ 
     this.loadLessons(); 
   }

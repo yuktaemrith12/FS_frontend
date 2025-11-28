@@ -9,13 +9,10 @@
        FRAMEWORKS & LIBRARIES
   ============================ -->
 
-  <!-- Vue.js 
-       Used for data binding, reactivity, and DOM updates.
-       It allows the app to dynamically render lessons, manage the cart, and validate forms.
-  -->
+  <!-- Vue 2 -->
   <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js"></script>
   
-  <!-- Font Awesome for icons (cart, arrows, stars, etc.) -->
+  <!-- Font Awesome for icons  -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
  
   <!-- Google Fonts: Montserrat  -->
@@ -34,7 +31,6 @@
 
     <!-- ===========================
          NAVIGATION BAR (Global Header)
-         Contains brand, navigation links, and cart button.
          Uses Vue bindings for dynamic states.
          Achieved: "Display Navigation" and "Cart Button" features.
     ============================ -->
@@ -54,9 +50,9 @@
         <button
           class="cart-pill"
           :disabled="view !== 'cart' && cart.length === 0"
-          @click="view === 'cart' ? go('lessons') : go('cart')"
+          @click="view === 'cart' ? go('lessons') : go('cart')"  
         >
-          <!-- Vue template conditions change icon and label -->
+          <!-- Vue template conditional rendering of icon and label -->
           <template v-if="view === 'cart'">
             <i class="fa-solid fa-arrow-left"></i>
             <span class="label">Back</span>
@@ -74,8 +70,7 @@
     <!-- ===========================
          HOME VIEW
          Shown when `view==='home'`
-         Includes hero section + tutor showcase.
-         Achieved:  Vue routing concept via conditional rendering.
+         Achieved:  Vue routing  via conditional rendering.
     ============================ -->
     <main v-if="view==='home'" class="home">
       
@@ -94,7 +89,7 @@
             new skills, spark creativity, and help students grow to the next level.
           </p>
 
-          <!-- Vue methods scrollToTutors() and go('lessons') -->
+          <!-- Bottom : Vue methods scrollToTutors() and go('lessons') -->
           <div class="hero-actions">
             <a href="#tutors" class="btn hollow" @click.prevent="scrollToTutors">Our Tutors</a>
             <button class="btn primary" @click="go('lessons')">Book Now</button>
@@ -107,7 +102,7 @@
         <h2>Our Tutors</h2>
         <div class="tutor-grid">
 
-          <!-- Tutor cards (static for presentation, align with coursework aesthetic requirement) -->
+          <!-- Tutor cards  -->
           <article class="tutor-card">
             <div class="avatar"><img src="assets/professors/prof4.jpg" alt=""></div>
             <h3>Dr. Sarah Johnson</h3>
@@ -175,6 +170,7 @@
       <p v-else-if="sortedLessons.length === 0" class="muted">No results.</p>
 
       <!-- ===== Product-style lesson cards ===== -->
+      <!-- v-for to loop through sortedLessons computed property -->
       <section class="product-grid">
         <article class="product-card" v-for="l in sortedLessons" :key="l._id">
           <div class="pc-media">
@@ -191,7 +187,7 @@
               <li><strong>Spaces:</strong> {{ l.space }}</li>
             </ul>
 
-            <!-- Dynamic rating display -->
+            <!-- Dynamic rating stars display -->
             <div class="pc-stars" :aria-label="`Rating ${l.rating}/5`">
               <i v-for="n in 5" :key="n"
                  :class="[n<=l.rating ? 'fa-solid' : 'fa-regular','fa-star']"></i>
@@ -283,7 +279,9 @@
           <div class="form compact">
             <label>
               Full Name
+              <!-- two-way bind to order.name -->
               <input v-model="order.name" placeholder="Letters only" />
+              <!--value updates live as you type-->
               <small :class="validName ? 'ok' : 'err'">{{ validName ? '✔ Looks good' : 'Letters only (A–Z, spaces)' }}</small>
             </label>
             <label>
@@ -326,12 +324,6 @@
 
   <!-- ===========================
        APP SCRIPT (Vue Instance)
-       Contains data, computed properties, and methods.
-       Connects front-end with backend via fetch() to:
-       ✅ GET lessons (from /lessons)
-       ✅ POST orders (to /orders)
-       ✅ PUT updates to lesson spaces (to /lessons/:id)
-       These fulfill Full Stack Coursework requirements.
   ============================ -->
   <script src="app.js"></script>
   
