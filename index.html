@@ -162,7 +162,12 @@
         </select>
 
         <!-- Two-way binding with v-model for live search -->
-        <input class="search-input" v-model.trim="searchTerm" placeholder="Search Here ..." />
+        <input
+          class="search-input"
+          v-model.trim="searchTerm"
+          @input="onSearchInput"           
+          placeholder="Search Here ..." />
+
       </header>
 
       <!-- Loading and Empty state indicators -->

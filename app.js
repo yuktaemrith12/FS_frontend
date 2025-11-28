@@ -20,6 +20,8 @@ new Vue({
     sortBy: "topic",   
     sortDir: "asc",    
     searchTerm: "",    
+    searchResults: [],     //results returned by /search
+    searching: false,      
 
     // Default cart + checkout form state
     cart: [],
@@ -59,14 +61,8 @@ new Vue({
 
     // Filter lessons 
     filteredLessons() {
-      const q = (this.searchTerm || "").toLowerCase();    // normalize search query
-      if (!q) return this.lessons;                        // return all if no query
-      return this.lessons.filter(l =>                     // return only lessons that match the search term
-        String(l.topic).toLowerCase().includes(q) ||     
-        String(l.location).toLowerCase().includes(q) ||
-        String(l.price).toLowerCase().includes(q) ||
-        String(l.space).toLowerCase().includes(q)
-      );
+      const q = (this.searchTerm || "").trim();
+      return q ? this.searchResults : this.lessons;
     },
 
     // Sort lessons 
@@ -208,7 +204,46 @@ new Vue({
         this.message = "Sorry, something went wrong. Please try again.";
         console.error(e);
       }
-    }
+    },
+
+    /* ---------------------------------------------------------
+       Search Handling (GET /search?q=...)
+    --------------------------------------------------------- */
+
+    // Called every time the user types in the search box
+      onSearchInput() {
+        const q = (this.searchTerm || "").trim();
+
+        // If the box is empty → clear backend search results -> show full list
+        if (!q) {
+          this.searchResults = [];
+          return;
+        }
+
+        // Otherwise, call backend search
+        this.fetchSearch(q);
+      },
+
+      // Actually call GET /search?q=...
+      async fetchSearch(q) {
+        try {
+          this.searching = true;
+
+          const r = await fetch(this.API_BASE + "/search?q=" + encodeURIComponent(q));
+          if (!r.ok) throw new Error("Search failed");
+
+          const json = await r.json();
+          this.searchResults = json;   // save filtered lessons from backend
+        } catch (e) {
+          console.error(e);
+          this.searchResults = [];     // on error, show no results
+        } finally {
+          this.searching = false;
+        }
+      },
+
+
+
   },
 
 
