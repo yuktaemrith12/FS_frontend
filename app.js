@@ -31,13 +31,7 @@ new Vue({
     showConfirm: false
   },
 
-  // Smooth scroll for "Our Tutors" button
-scrollToTutors() {
-      const section = document.getElementById("tutors");
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" }); // smooth scroll
-      }
-    },
+
 
   /* ---------------------------------------------------------
      Computed Properties (Recalculates data on state change)
@@ -90,6 +84,14 @@ scrollToTutors() {
     go(view) { 
       this.view = view; 
       window.scrollTo(0, 0);   // scroll to top when switching pages
+    },
+
+      // Smooth scroll for "Our Tutors" button
+    scrollToTutors() {
+      const section = document.getElementById("tutors");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" }); // smooth scroll
+      }
     },
 
     //Capitalize first letter (titles) 
