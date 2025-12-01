@@ -86,17 +86,17 @@ new Vue({
       window.scrollTo(0, 0);   // scroll to top when switching pages
     },
 
-      // Smooth scroll for "Our Tutors" button
-    scrollToTutors() {
-      const section = document.getElementById("tutors");
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth" }); // smooth scroll
-      }
-    },
-
     //Capitalize first letter (titles) 
     cap(s) { 
       return String(s || '').charAt(0).toUpperCase() + String(s || '').slice(1); 
+    },
+
+    // FIX → scrollToTutors added INSIDE methods
+    scrollToTutors() {
+      const section = document.getElementById("tutors");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
     },
 
     /* ---------------------------------------------------------
