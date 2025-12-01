@@ -32,12 +32,12 @@ new Vue({
   },
 
   // Smooth scroll for "Our Tutors" button
-  scrollToTutors(){
-    const el = document.getElementById('tutors');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      },
+scrollToTutors() {
+      const section = document.getElementById("tutors");
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" }); // smooth scroll
+      }
+    },
 
   /* ---------------------------------------------------------
      Computed Properties (Recalculates data on state change)
