@@ -199,10 +199,11 @@
             </div>
 
             <!-- Add to cart button with space validation -->
-            <button class="btn primary pc-cta"
-                    :disabled="l.space<=0"
-                    :class="{disabled:l.space<=0}"
-                    @click="addToCart(l)">
+            <button
+              class="btn primary pc-cta"
+              :disabled="l.space<=0"
+              :class="{disabled:l.space<=0}"
+              v-on:click="addToCart(l)">
               {{ l.space>0 ? 'Book Now' : 'Sold Out' }}
             </button>
           </div>

@@ -60,7 +60,7 @@ new Vue({
 
 
     // Filter lessons 
-    filteredLessons() {
+    filteredLessons() { 
       const q = (this.searchTerm || "").trim();
       return q ? this.searchResults : this.lessons;
     },
@@ -75,8 +75,8 @@ new Vue({
         let va=a[key], vb=b[key];                             // compare "sort by" values
         if (typeof va==="string") va=va.toLowerCase();  
         if (typeof vb==="string") vb=vb.toLowerCase();
-        if (va<vb) return -1*dir;                             // +1 A before B (descending)
-        if (va>vb) return 1*dir;                              // -1 B before A (ascending)        
+        if (va<vb) return -1*dir;                             // -1 A before B  
+        if (va>vb) return 1*dir;                              // +1 B before A      
         return 0;
       });
     }
@@ -178,10 +178,10 @@ new Vue({
 
       try {
         // 1) Save order in the backend database
-        const r = await fetch(this.API_BASE + "/orders", {  // HTTP sends POST request to /orders
+        const r = await fetch(this.API_BASE + "/orders", {    // HTTP sends POST request to /orders
           method: "POST",
           headers: { "Content-Type": "application/json" },  
-          body: JSON.stringify(payload)                    // turns payload into JSON
+          body: JSON.stringify(payload)                       // turns payload into JSON
         });
         if (!r.ok) throw new Error("Order failed");
 
@@ -229,10 +229,10 @@ new Vue({
         try {
           this.searching = true;
 
-          const r = await fetch(this.API_BASE + "/search?q=" + encodeURIComponent(q));
+          const r = await fetch(this.API_BASE + "/search?q=" + encodeURIComponent(q)); // GET request to /search with query parameter
           if (!r.ok) throw new Error("Search failed");
 
-          const json = await r.json();
+          const json = await r.json(); // parse JSON response
           this.searchResults = json;   // save filtered lessons from backend
         } catch (e) {
           console.error(e);
